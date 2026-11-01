@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: Apache-2.0
+name: 'Hivemind Receipts Offline Verifier (.hvr)'
+description: 'Offline Class-1 verification of .hvr SCITT receipts, C2SP witness cosignature quorums, and DSSE/Gitsign provenance.'
+author: 'Hypereum Ltd'
+branding:
+  icon: 'shield'
+  color: 'green'
+inputs:
+  receipts-path:
+    description: 'File or directory path containing .hvr receipts, JSON bundles, or .dsse.json provenance files.'
+    required: false
+    default: '.'
+  trust-file:
+    description: 'Path to trust roots JSON file (issuers, log_keys, note_verifiers, witness_policy).'
+    required: false
+    default: ''
+  checkpoint-file:
+    description: 'Path to C2SP signed-note checkpoint file.'
+    required: false
+    default: ''
+  min-witness-quorum:
+    description: 'Minimum number of valid C2SP witness cosignatures required on checkpoints.'
+    required: false
+    default: '3'
+  require-dsse:
+    description: 'Require at least one verified DSSE in-toto provenance envelope when true.'
+    required: false
+    default: 'false'
+outputs:
+  verdict:
+    description: 'Overall verification verdict (VERIFIED or FAILED).'
+    value: ${{ steps.verify.outputs.verdict }}
+  verified-count:
+    description: 'Number of receipts and provenance envelopes verified.'
+    value: ${{ steps.verify.outputs.verified_count }}
+  report-json:
+    description: 'JSON summary report of all verified artifacts.'
+    value: ${{ steps.verify.outputs.report_json }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Run Offline Hivemind Receipts Verification
+      id: verify
+      shell: bash
+      env:
+        INPUT_RECEIPTS_PATH: ${{ inputs.receipts-path }}
+        INPUT_TRUST_FILE: ${{ inputs.trust-file }}
+        INPUT_CHECKPOINT_FILE: ${{ inputs.checkpoint-file }}
+        INPUT_MIN_WITNESS_QUORUM: ${{ inputs.min-witness-quorum }}
+        INPUT_REQUIRE_DSSE: ${{ inputs.require-dsse }}
+      run: |
+        node "${{ github.action_path }}/verify-action.mjs" \
+          --path "$INPUT_RECEIPTS_PATH" \
+          ${INPUT_TRUST_FILE:+--trust "$INPUT_TRUST_FILE"} \
+          ${INPUT_CHECKPOINT_FILE:+--checkpoint "$INPUT_CHECKPOINT_FILE"} \
+          --min-quorum "$INPUT_MIN_WITNESS_QUORUM" \
+          $([ "$INPUT_REQUIRE_DSSE" = "true" ] && echo "--require-dsse" || true)

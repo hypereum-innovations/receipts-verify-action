@@ -1,0 +1,48 @@
+#!/usr/bin/env node
+// SPDX-License-Identifier: Apache-2.0
+/**
+ * `hvr-pre-commit` — Git pre-commit hook entrypoint for verifying staged
+ * `.hvr` receipts, C2SP witness cosignatures, and DSSE provenance envelopes.
+ */
+import { runVerifyAction } from '../verify-action.mjs';
+
+const argv = process.argv.slice(2);
+const files = [];
+let minWitnessQuorum = 3;
+let trustFile;
+let checkpointFile;
+
+for (let i = 0; i < argv.length; i++) {
+  const arg = argv[i];
+  if (arg === '--min-quorum') {
+    minWitnessQuorum = Number(argv[++i]);
+  } else if (arg === '--trust') {
+    trustFile = argv[++i];
+  } else if (arg === '--checkpoint') {
+    checkpointFile = argv[++i];
+  } else if (!arg.startsWith('--')) {
+    files.push(arg);
+  }
+}
+
+if (files.length === 0) {
+  console.log('[hvr-pre-commit] No staged .hvr files to verify.');
+  process.exit(0);
+}
+
+const report = runVerifyAction({
+  files,
+  minWitnessQuorum,
+  ...(trustFile ? { trustFile } : {}),
+  ...(checkpointFile ? { checkpointFile } : {}),
+});
+
+for (const r of report.results) {
+  console.log(`[hvr-pre-commit] ${r.verdict} ${r.file}`);
+}
+
+if (!report.ok) {
+  console.error(`[hvr-pre-commit] FAILED (${report.failedCount} failed, ${report.verifiedCount} verified)`);
+  process.exit(1);
+}
+process.exit(0);

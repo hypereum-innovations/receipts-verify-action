@@ -1,0 +1,15 @@
+{
+  "name": "@hypereum/receipts-verify-action",
+  "version": "0.1.0",
+  "description": "GitHub Action and Git pre-commit hook for offline .hvr receipt and C2SP witness verification.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./verify-action.mjs",
+  "bin": {
+    "hvr-pre-commit": "./bin/hvr-pre-commit"
+  },
+  "scripts": {
+    "build": "node --test test/smoke.test.mjs",
+    "test": "node --test test/smoke.test.mjs"
+  }
+}

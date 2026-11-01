@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
+- id: hvr-verify-receipts
+  name: Verify Hivemind Receipts (.hvr) and C2SP Witness Quorum
+  description: Offline Class-1 verification of staged .hvr receipts, C2SP checkpoints, and DSSE provenance envelopes.
+  entry: packages/receipts-verify-action/bin/hvr-pre-commit
+  language: node
+  files: \.(hvr|scitt|hvr\.json|dsse\.json)$
+  pass_filenames: true
