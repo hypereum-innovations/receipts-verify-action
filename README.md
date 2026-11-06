@@ -1,3 +1,5 @@
+> **Retired preview, not maintained.**
+
 # `receipts-verify-action` & `hvr-pre-commit`
 
 SPDX-License-Identifier: Apache-2.0
